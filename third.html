@@ -1,0 +1,374 @@
+// 库存状态饼图
+            const pieCtx = document.getElementById('pieChart').getContext('2d');
+            charts.pieChart = new Chart(pieCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['正常', '低库存', '待盘点', '过期'],
+                    datasets: [{
+                        data: [65, 15, 10, 5],
+                        backgroundColor: [
+                            '#198754',
+                            '#fd7e14',
+                            '#0dcaf0',
+                            '#dc3545'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        }
+                    }
+                }
+            });
+        }
+
+        function refreshDashboard() {
+            // 更新统计数据
+            const todayInbound = inboundData.filter(item => {
+                const itemDate = new Date(item.time.split(' ')[0]);
+                const today = new Date();
+                return itemDate.toDateString() === today.toDateString() && item.status === '已通过';
+            }).length;
+            
+            const pendingOutbound = orderData.filter(item => item.status === '待拣选').length;
+            const alertCount = inventoryData.filter(item => item.status === '低库存' || item.status === '待盘点').length;
+            
+            document.getElementById('stat-inbound').textContent = todayInbound;
+            document.getElementById('stat-outbound').textContent = pendingOutbound;
+            document.getElementById('stat-alert').textContent = alertCount;
+            document.getElementById('stat-inbound-trend').textContent = todayInbound > 10 ? '+12%' : '-5%';
+            
+            // 更新最后更新时间
+            const now = new Date();
+            document.getElementById('last-update-time').textContent = 
+                now.getHours().toString().padStart(2, '0') + ':' + 
+                now.getMinutes().toString().padStart(2, '0') + ':' + 
+                now.getSeconds().toString().padStart(2, '0');
+            
+            showAlert('仪表板数据已刷新', 'success');
+        }
+
+        function changeChartRange(range) {
+            // 更新按钮状态
+            document.querySelectorAll('#chart-container .btn-group button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // 这里可以更新图表数据，简化处理
+            showAlert(`已切换至${range === 'day' ? '今日' : range === 'week' ? '本周' : '本月'}视图`, 'info');
+        }
+
+        // --- 入库申请管理 ---
+
+        function renderInboundView() {
+            const createPanel = document.getElementById('supplier-create-panel');
+            if (currentUser.role === 'supplier') {
+                createPanel.style.display = 'block';
+                document.getElementById('list-info-badge').innerText = "我的申请记录";
+                document.getElementById('list-info-badge').className = "badge bg-primary";
+            } else {
+                createPanel.style.display = 'none'; 
+                document.getElementById('list-info-badge').innerText = "所有待处理申请";
+                document.getElementById('list-info-badge').className = "badge bg-danger";
+            }
+
+            const tbody = document.getElementById('inbound-table-body');
+            const emptyMsg = document.getElementById('inbound-empty');
+            tbody.innerHTML = '';
+            
+            // 过滤数据
+            let displayData = currentUser.role === 'supplier' 
+                ? inboundData.filter(item => item.supplier === currentUser.name)
+                : inboundData;
+                
+            // 应用状态过滤
+            if (currentFilter.inbound !== 'all') {
+                const statusMap = {
+                    'pending': '待审批',
+                    'approved': '已通过',
+                    'rejected': '已驳回',
+                    'draft': '草稿'
+                };
+                displayData = displayData.filter(item => item.status === statusMap[currentFilter.inbound]);
+            }
+            
+            // 渲染表格
+            if (displayData.length === 0) {
+                emptyMsg.style.display = 'block';
+            } else {
+                emptyMsg.style.display = 'none';
+                displayData.forEach(item => {
+                    let badgeClass = '';
+                    switch(item.status) {
+                        case '已通过': badgeClass = 'bg-success'; break;
+                        case '待审批': badgeClass = 'bg-warning text-dark'; break;
+                        case '已驳回': badgeClass = 'bg-danger'; break;
+                        case '草稿': badgeClass = 'bg-secondary'; break;
+                    }
+
+                    let actionBtn = '';
+                    if (currentUser.role === 'admin' && item.status === '待审批') {
+                        actionBtn = `<button class="btn btn-sm btn-success me-1" onclick="showApproveModal('${item.id}')">
+                                        <i class="fas fa-check me-1"></i>审批
+                                    </button>`;
+                    } else if (currentUser.role === 'supplier') {
+                        if (item.status === '草稿') {
+                            actionBtn = `<button class="btn btn-sm btn-primary me-1" onclick="submitDraft('${item.id}')">
+                                            正式提交
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteApplication('${item.id}')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>`;
+                        } else if (item.status === '待审批') {
+                            actionBtn = `<button class="btn btn-sm btn-outline-secondary me-1" onclick="withdrawApplication('${item.id}')">
+                                            撤回
+                                        </button>`;
+                        } else if (item.status === '已驳回') {
+                            actionBtn = `<button class="btn btn-sm btn-outline-info" onclick="viewRejectReason('${item.id}')">
+                                            查看原因
+                                        </button>`;
+                        }
+                    }
+                    
+                    // 如果没有操作按钮
+                    if (!actionBtn) {
+                        actionBtn = `<span class="text-muted small">-</span>`;
+                    }
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td class="fw-bold">${item.id}</td>
+                            <td>${item.supplier}</td>
+                            <td>${item.cargo}</td>
+                            <td>${item.spec || '-'}</td>
+                            <td>${item.qty}</td>
+                            <td>${item.batch || '-'}</td>
+                            <td>${item.time}</td>
+                            <td><span class="badge ${badgeClass}">${item.status}</span></td>
+                            <td>${actionBtn}</td>
+                        </tr>
+                    `;
+                });
+            }
+        }
+
+        function filterInbound(filter) {
+            currentFilter.inbound = filter;
+            renderInboundView();
+        }
+
+        function submitApplication() {
+            const cargoName = document.getElementById('cargo-name').value.trim();
+            const cargoSpec = document.getElementById('cargo-spec').value.trim();
+            const cargoQty = document.getElementById('cargo-qty').value.trim();
+            const cargoBatch = document.getElementById('cargo-batch').value.trim();
+            const cargoEta = document.getElementById('cargo-eta').value;
+            const cargoNotes = document.getElementById('cargo-notes').value.trim();
+
+            if(!cargoName || !cargoQty) {
+                showAlert('请填写货物名称和数量！', 'warning');
+                return;
+            }
+
+            const newId = 'IN' + new Date().getTime().toString().slice(-8);
+            const now = new Date();
+            const timeStr = now.toLocaleDateString('zh-CN') + ' ' + now.toLocaleTimeString('zh-CN', {hour: '2-digit', minute:'2-digit'});
+            
+            inboundData.unshift({
+                id: newId,
+                supplier: currentUser.name,
+                cargo: cargoName,
+                spec: cargoSpec,
+                qty: parseInt(cargoQty),
+                batch: cargoBatch,
+                eta: cargoEta || now.toISOString().split('T')[0],
+                time: timeStr,
+                status: '待审批',
+                notes: cargoNotes,
+                auditLog: []
+            });
+            
+            setStorageData('wms_inbound_data', inboundData);
+
+            showAlert('申请提交成功！请等待管理员审核。', 'success');
+            renderInboundView();
+            document.getElementById('inbound-form').reset();
+        }
+
+        function saveAsDraft() {
+            const cargoName = document.getElementById('cargo-name').value.trim();
+            const cargoSpec = document.getElementById('cargo-spec').value.trim();
+            const cargoQty = document.getElementById('cargo-qty').value.trim();
+            const cargoBatch = document.getElementById('cargo-batch').value.trim();
+            const cargoEta = document.getElementById('cargo-eta').value;
+            const cargoNotes = document.getElementById('cargo-notes').value.trim();
+
+            if(!cargoName || !cargoQty) {
+                showAlert('请填写货物名称和数量！', 'warning');
+                return;
+            }
+
+            const newId = 'IN' + new Date().getTime().toString().slice(-8);
+            const now = new Date();
+            const timeStr = now.toLocaleDateString('zh-CN') + ' ' + now.toLocaleTimeString('zh-CN', {hour: '2-digit', minute:'2-digit'});
+            
+            inboundData.unshift({
+                id: newId,
+                supplier: currentUser.name,
+                cargo: cargoName,
+                spec: cargoSpec,
+                qty: parseInt(cargoQty),
+                batch: cargoBatch,
+                eta: cargoEta || now.toISOString().split('T')[0],
+                time: timeStr,
+                status: '草稿',
+                notes: cargoNotes,
+                auditLog: []
+            });
+            
+            setStorageData('wms_inbound_data', inboundData);
+
+            showAlert('草稿保存成功！', 'success');
+            renderInboundView();
+            document.getElementById('inbound-form').reset();
+        }
+
+        function showApproveModal(appId) {
+            const item = inboundData.find(d => d.id === appId);
+            if (!item) return;
+            
+            currentAppToApprove = appId;
+            
+            document.getElementById('modal-app-id').textContent = item.id;
+            document.getElementById('modal-app-supplier').textContent = item.supplier;
+            document.getElementById('modal-app-cargo').textContent = item.cargo;
+            document.getElementById('modal-app-qty').textContent = item.qty;
+            
+            // 重置表单
+            document.getElementById('approvePass').checked = true;
+            document.getElementById('reject-reason').value = '';
+            document.getElementById('approve-notes').value = '';
+            document.getElementById('reject-reason-container').style.display = 'none';
+            
+            const modal = new bootstrap.Modal(document.getElementById('approveModal'));
+            modal.show();
+            
+            // 监听审核结果变化
+            document.querySelectorAll('input[name="approveResult"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    document.getElementById('reject-reason-container').style.display = 
+                        this.value === 'reject' ? 'block' : 'none';
+                });
+            });
+        }
+
+        function confirmApprove() {
+            const result = document.querySelector('input[name="approveResult"]:checked').value;
+            const notes = document.getElementById('approve-notes').value.trim();
+            const rejectReason = document.getElementById('reject-reason').value.trim();
+            
+            if (result === 'reject' && !rejectReason) {
+                showAlert('请填写驳回理由！', 'warning');
+                return;
+            }
+            
+            const item = inboundData.find(d => d.id === currentAppToApprove);
+            if (!item) return;
+            
+            const now = new Date();
+            const timeStr = now.toLocaleDateString('zh-CN') + ' ' + now.toLocaleTimeString('zh-CN', {hour: '2-digit', minute:'2-digit'});
+            
+            item.status = result === 'pass' ? '已通过' : '已驳回';
+            item.auditLog.push({
+                user: currentUser.name,
+                action: result === 'pass' ? '通过' : '驳回',
+                time: timeStr,
+                notes: notes || (result === 'reject' ? rejectReason : '')
+            });
+            
+            // 如果审核通过，自动创建库存记录
+            if (result === 'pass') {
+                const newInventoryId = 'INV' + new Date().getTime().toString().slice(-6);
+                const areaCodes = ['A', 'B', 'C', 'D'];
+                const area = areaCodes[Math.floor(Math.random() * areaCodes.length)];
+                const rack = Math.floor(Math.random() * 10) + 1;
+                const level = Math.floor(Math.random() * 5) + 1;
+                const position = Math.floor(Math.random() * 10) + 1;
+                
+                inventoryData.push({
+                    id: newInventoryId,
+                    location: `${area}-${rack.toString().padStart(2, '0')}-${level.toString().padStart(2, '0')}-${position.toString().padStart(2, '0')}`,
+                    cargo: item.cargo,
+                    spec: item.spec || '',
+                    qty: item.qty,
+                    safeQty: Math.floor(item.qty * 0.7),
+                    update: timeStr,
+                    status: '正常',
+                    area: area
+                });
+                
+                setStorageData('wms_inventory_data', inventoryData);
+            }
+            
+            setStorageData('wms_inbound_data', inboundData);
+            
+            bootstrap.Modal.getInstance(document.getElementById('approveModal')).hide();
+            
+            const actionText = result === 'pass' ? '审批通过' : '已驳回';
+            showAlert(`申请 ${currentAppToApprove} ${actionText}！`, 'success');
+            
+            renderInboundView();
+            if (result === 'pass') {
+                renderInventoryView();
+            }
+            
+            currentAppToApprove = null;
+        }
+
+        function submitDraft(appId) {
+            const item = inboundData.find(d => d.id === appId);
+            if(item) {
+                item.status = '待审批';
+                setStorageData('wms_inbound_data', inboundData);
+                showAlert('草稿已正式提交！', 'success');
+                renderInboundView();
+            }
+        }
+
+        function deleteApplication(appId) {
+            if(confirm('确定要删除此草稿吗？')) {
+                inboundData = inboundData.filter(d => d.id !== appId);
+                setStorageData('wms_inbound_data', inboundData);
+                showAlert('草稿已删除！', 'success');
+                renderInboundView();
+            }
+        }
+
+        function withdrawApplication(appId) {
+            if(confirm('确定要撤回此申请吗？撤回后需要重新提交。')) {
+                const item = inboundData.find(d => d.id === appId);
+                if(item) {
+                    item.status = '草稿';
+                    setStorageData('wms_inbound_data', inboundData);
+                    showAlert('申请已撤回！', 'success');
+                    renderInboundView();
+                }
+            }
+        }
+
+        function viewRejectReason(appId) {
+            const item = inboundData.find(d => d.id === appId);
+            if(item && item.auditLog && item.auditLog.length > 0) {
+                const lastAudit = item.auditLog[item.auditLog.length - 1];
+                if(lastAudit.action === '驳回') {
+                    alert(`驳回理由：${lastAudit.notes || '未填写具体理由'}`);
+                }
+            }
+        }
+
