@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智慧仓储协同系统 - 登录</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar-width: 250px;
+            --primary-color: #0d6efd;
+            --bg-dark: #212529;
+        }
+        body {
+            height: 100vh;
+            background-color: #f4f6f9;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        /* --- 登录页样式 --- */
+        #login-container {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #0d6efd 0%, #0099ff 100%);
+        }
+        .login-card {
+            width: 420px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+            border: none;
+            overflow: hidden;
+        }
+        .login-header {
+            background: linear-gradient(to right, #0d6efd, #0099ff);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .remember-me {
+            font-size: 0.85rem;
+        }
+
+        /* --- 主界面样式 --- */
+        #main-container {
+            display: none; /* 默认隐藏，登录后显示 */
+            height: 100%;
+            display: flex; 
+        }
+        #sidebar {
+            min-width: var(--sidebar-width);
+            max-width: var(--sidebar-width);
+            background-color: var(--bg-dark);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+        #sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            padding: 10px 15px;
+        }
+        #sidebar .nav-link:hover, #sidebar .nav-link.active {
+            color: white;
+            background-color: var(--primary-color);
+            border-radius: 8px;
+            transform: translateX(3px);
+        }
+        #content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 25px;
+            background-color: #f4f6f9;
+        }
+        .view-section {
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* --- 卡片样式 --- */
+        .dashboard-card {
+            border-radius: 10px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: none;
+        }
+        .dashboard-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        /* --- 表格样式 --- */
+        .table-hover tbody tr {
+            transition: background-color 0.2s;
+        }
+        .table-hover tbody tr:hover {
+            background-color: rgba(13, 110, 253, 0.05);
+        }
+        
+        /* --- 表单样式 --- */
+        .form-label {
+            font-weight: 500;
+            color: #495057;
+        }
+        .form-control, .form-select {
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #86b7fe;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+        
+        /* --- 按钮样式 --- */
+        .btn {
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: linear-gradient(to right, #0d6efd, #0099ff);
+            border: none;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(to right, #0b5ed7, #0086e6);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(13, 110, 253, 0.3);
+        }
+        
+        /* --- 徽章样式 --- */
+        .badge {
+            font-weight: 500;
+            padding: 5px 10px;
+            border-radius: 20px;
+        }
+        
+        /* --- 警报样式 --- */
+        .alert {
+            border-radius: 10px;
+            border: none;
+        }
+        
+        /* --- 模态框样式 --- */
+        .modal-content {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        
+        /* --- 响应式调整 --- */
+        @media (max-width: 768px) {
+            #sidebar {
+                min-width: 220px;
+                max-width: 220px;
+            }
+            .login-card {
+                width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 登录容器 -->
+    <div id="login-container">
+        <div class="card login-card">
+            <div class="login-header">
+                <i class="fas fa-boxes-stacked fa-3x mb-3"></i>
+                <h4 class="fw-bold">智慧仓储协同系统</h4>
+                <p class="small opacity-90">Smart Warehouse & Logistics System</p>
+            </div>
+            <div class="card-body p-4">
+                <form id="loginForm">
+                    <div class="mb-3">
+                        <label class="form-label">账号</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-user"></i></span>
+                            <input type="text" id="username" class="form-control" placeholder="请输入账号" required>
+                        </div>
+                        <div class="form-text small">测试账号: admin / supplier</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">密码</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                            <input type="password" id="password" class="form-control" placeholder="请输入密码" required>
+                        </div>
+                        <div class="form-text small">测试密码: 123456</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">登录身份</label>
+                        <select id="loginRole" class="form-select">
+                            <option value="admin">系统管理员</option>
+                            <option value="supplier">供应商</option>
+                        </select>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="rememberMe">
+                        <label class="form-check-label remember-me" for="rememberMe">记住密码</label>
+                    </div>
+                    <button type="button" class="btn btn-primary w-100 py-2 fw-bold" onclick="handleLogin()">
+                        登 录
+                    </button>
+                    <div class="mt-3 text-center small text-muted">
+                        <p class="mb-2">当前为演示系统，数据保存在浏览器本地</p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主界面容器 -->
+    <div id="main-container" style="display: none;">
+        <!-- 侧边栏 -->
+        <nav id="sidebar" class="p-3">
+            <div class="d-flex align-items-center mb-4 text-white text-decoration-none">
+                <span class="fs-4 fw-bold"><i class="fas fa-cube me-2"></i>WMS 系统</span>
+            </div>
+            
+            <!-- 用户信息 -->
+            <div class="mb-3 px-2">
+                <div class="d-flex align-items-center p-2 bg-secondary bg-opacity-25 rounded">
+                    <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                        <i class="fas fa-user text-white"></i>
+                    </div>
+                    <div class="ms-2">
+                        <div class="small fw-bold" id="nav-username">User</div>
+                        <div class="badge bg-info text-dark mt-1" style="font-size: 0.65em;" id="nav-role-badge">Role</div>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="bg-secondary">
+            
+            <!-- 菜单 -->
+            <ul class="nav nav-pills flex-column mb-auto" id="sidebar-menu">
+                <!-- 菜单项由JS动态生成 -->
+            </ul>
+
+            <hr class="bg-secondary">
+            
+            <!-- 退出按钮 -->
+            <button class="btn btn-outline-light w-100 btn-sm mt-auto" onclick="logout()">
+                <i class="fas fa-sign-out-alt me-2"></i>退出登录
+            </button>
+        </nav>
+
+        <!-- 内容区域 -->
+        <div id="content">
+            <!-- 综合监控大屏 -->
+            <div id="view-dashboard" class="view-section">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="fw-bold mb-0">综合监控大屏</h2>
+                    <div class="text-muted small">
+                        <i class="fas fa-sync-alt me-1"></i> 最后更新: <span id="last-update-time">--:--:--</span>
+                    </div>
+                </div>
+                
+                <!-- 核心指标 -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md-3 col-sm-6">
+                        <div class="card dashboard-card bg-primary text-white p-3 border-0 shadow-sm">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h3 class="fw-bold" id="stat-inbound">0</h3>
+                                    <div class="small opacity-75">今日入库单据</div>
+                                </div>
+                                <i class="fas fa-inbox fa-2x opacity-50"></i>
+                            </div>
+                            <div class="small mt-2">
+                                <i class="fas fa-arrow-up me-1"></i> <span id="stat-inbound-trend">0%</span> 较昨日
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <div class="card dashboard-card bg-success text-white p-3 border-0 shadow-sm">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h3 class="fw-bold" id="stat-device">94%</h3>
+                                    <div class="small opacity-75">设备在线率</div>
+                                </div>
+                                <i class="fas fa-robot fa-2x opacity-50"></i>
+                            </div>
+                            <div class="small mt-2">
+                                <i class="fas fa-check-circle me-1"></i> 运行正常
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <div class="card dashboard-card bg-warning text-dark p-3 border-0 shadow-sm">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h3 class="fw-bold" id="stat-alert">0</h3>
+                                    <div class="small opacity-75">库存异常告警</div>
+                                </div>
+                                <i class="fas fa-exclamation-triangle fa-2x opacity-50"></i>
+                            </div>
+                            <div class="small mt-2">
+                                <i class="fas fa-eye me-1"></i> <a href="#" onclick="switchView('inventory', null); return false;" class="text-dark">查看详情</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <div class="card dashboard-card bg-info text-white p-3 border-0 shadow-sm">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h3 class="fw-bold" id="stat-outbound">0</h3>
+                                    <div class="small opacity-75">待处理出库单</div>
+                                </div>
+                                <i class="fas fa-shipping-fast fa-2x opacity-50"></i>
+                            </div>
+                            <div class="small mt-2">
+                                <i class="fas fa-clock me-1"></i> 等待处理
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 图表区域 -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md-8">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">出入库趋势</h5>
+                                <div class="btn-group btn-group-sm">
+                                    <button type="button" class="btn btn-outline-secondary active" onclick="changeChartRange('day')">今日</button>
+                                    <button type="button" class="btn btn-outline-secondary" onclick="changeChartRange('week')">本周</button>
+                                    <button type="button" class="btn btn-outline-secondary" onclick="changeChartRange('month')">本月</button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div id="chart-container" style="height: 250px;">
+                                    <canvas id="trendChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-header bg-white border-0">
+                                <h5 class="mb-0">库存状态分布</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="chart-pie-container" style="height: 250px;">
+                                    <canvas id="pieChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 系统状态 -->
+                <div class="alert alert-info border-0 shadow-sm">
+                    <i class="fas fa-chart-line me-2"></i> 
+                    <strong>系统状态</strong>: 数字孪生视图已就绪，实时日志流运行正常，KPI数据每5分钟自动刷新。
+                    <button class="btn btn-sm btn-outline-info ms-2" onclick="refreshDashboard()">
+                        <i class="fas fa-sync-alt me-1"></i> 刷新数据
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 入库申请管理 -->
+            <div id="view-inbound" class="view-section" style="display: none;">
+                <h2 class="fw-bold mb-4">入库申请管理</h2>
+                
+                <!-- 新建入库申请（供应商可见） -->
+                <div id="supplier-create-panel" class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white fw-bold text-primary border-0">
+                        <i class="fas fa-plus-circle me-2"></i>新建入库申请
+                    </div>
+                    <div class="card-body">
+                        <form id="inbound-form">
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">货物名称 <span class="text-danger">*</span></label>
+                                    <input type="text" id="cargo-name" class="form-control" placeholder="如：高精密轴承" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">货物规格</label>
+                                    <input type="text" id="cargo-spec" class="form-control" placeholder="如：M8x20mm">
+                                </div>
+                            </div>
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-4">
+                                    <label class="form-label">数量 <span class="text-danger">*</span></label>
+                                    <input type="number" id="cargo-qty" class="form-control" placeholder="100" min="1" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">批次号</label>
+                                    <input type="text" id="cargo-batch" class="form-control" placeholder="如：BATCH202312">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">预计入库时间</label>
+                                    <input type="date" id="cargo-eta" class="form-control" value="">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <label class="form-label">备注信息</label>
+                                    <textarea id="cargo-notes" class="form-control" rows="2" placeholder="可填写特殊要求、注意事项等"></textarea>
+                                </div>
+                                <div class="col-md-4 d-flex align-items-end">
+                                    <div class="w-100">
+                                        <button type="button" class="btn btn-primary w-100 mb-2" onclick="submitApplication()">
+                                            <i class="fas fa-paper-plane me-1"></i> 提交申请
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary w-100 btn-sm" onclick="saveAsDraft()">
+                                            <i class="fas fa-save me-1"></i> 暂存草稿
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- 申请列表 -->
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center border-0">
+                        <span><i class="fas fa-list me-2"></i>申请列表</span>
+                        <div>
+                            <span class="badge bg-secondary me-2" id="list-info-badge">全部数据</span>
+                            <div class="btn-group btn-group-sm">
+                                <button type="button" class="btn btn-outline-secondary" onclick="filterInbound('all')">全部</button>
+                                <button type="button" class="btn btn-outline-primary" onclick="filterInbound('pending')">待审批</button>
+                                <button type="button" class="btn btn-outline-success" onclick="filterInbound('approved')">已通过</button>
+                                <button type="button" class="btn btn-outline-danger" onclick="filterInbound('rejected')">已驳回</button>
+                                <button type="button" class="btn btn-outline-warning" onclick="filterInbound('draft')">草稿</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0 align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>申请编号</th>
+                                        <th>供应商</th>
+                                        <th>货物</th>
+                                        <th>规格</th>
+                                        <th>数量</th>
+                                        <th>批次</th>
+                                        <th>提交时间</th>
+                                        <th>状态</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="inbound-table-body">
+                                    <!-- 动态生成 -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-center p-3 border-top" id="inbound-empty" style="display: none;">
+                            <i class="fas fa-inbox fa-2x text-muted mb-2"></i>
+                            <p class="text-muted mb-0">暂无入库申请记录</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 库存盘点与实时查询 -->
+            <div id="view-inventory" class="view-section" style="display: none;">
+                <h2 class="fw-bold mb-4">库存盘点与实时查询</h2>
+                
+                <!-- 搜索和筛选 -->
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label">货物名称</label>
+                                <input type="text" id="inventory-search" class="form-control" placeholder="搜索货物名称..." onkeyup="searchInventory()">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">货位区域</label>
+                                <select id="inventory-area" class="form-select" onchange="filterInventory()">
+                                    <option value="">全部区域</option>
+                                    <option value="A">A区</option>
+                                    <option value="B">B区</option>
+                                    <option value="C">C区</option>
+                                    <option value="D">D区</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">库存状态</label>
+                                <select id="inventory-status" class="form-select" onchange="filterInventory()">
+                                    <option value="">全部状态</option>
+                                    <option value="正常">正常</option>
+                                    <option value="待盘点">待盘点</option>
+                                    <option value="低库存">低库存</option>
+                                    <option value="过期">过期</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button class="btn btn-outline-secondary w-100" onclick="resetInventoryFilters()">
+                                    <i class="fas fa-redo me-1"></i> 重置
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 库存清单和盘点操作 -->
+                <div class="row g-4">
+                    <div class="col-lg-9">
+                         <div class="card shadow-sm border-0">
+                            <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">实时库存清单</h5>
+                                <span class="badge bg-primary" id="inventory-count">0 条记录</span>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-sm mb-0 align-middle">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>库存ID</th>
+                                                <th>货位编码</th>
+                                                <th>货物名称</th>
+                                                <th>规格</th>
+                                                <th>当前数量</th>
+                                                <th>安全库存</th>
+                                                <th>最近更新</th>
+                                                <th>状态</th>
+                                                <th>操作</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="inventory-table-body">
+                                            <!-- 动态生成 -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="text-center p-3 border-top" id="inventory-empty" style="display: none;">
+                                    <i class="fas fa-box-open fa-2x text-muted mb-2"></i>
+                                    <p class="text-muted mb-0">暂无库存记录</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3">
+                         <div class="card shadow-sm border-0 bg-light">
+                            <div class="card-header bg-primary text-white fw-bold border-0">
+                                <i class="fas fa-clipboard-check me-2"></i>盘点操作
+                            </div>
+                            <div class="card-body">
+                                <p class="small text-muted mb-3">通过调度四向穿梭车进行盘点，确保数据一致性。</p>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">盘点类型</label>
+                                    <select id="stocktake-type" class="form-select form-select-sm">
+                                        <option value="full">全仓盘点</option>
+                                        <option value="area">区域盘点</option>
+                                        <option value="random">随机抽样</option>
+                                    </select>
+                                </div>
+                                
+                                <button class="btn btn-warning w-100 mb-2" onclick="startStocktake()">
+                                    <i class="fas fa-sync-alt me-2"></i>发起盘点任务
+                                </button>
+                                
+                                <button class="btn btn-outline-primary w-100 mb-3" onclick="showStocktakeHistory()">
+                                    <i class="fas fa-history me-2"></i>查看盘点历史
+                                </button>
+                                
+                                <hr class="my-3">
+                                
+                                <div class="small">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span class="text-muted">待盘点货位：</span>
+                                        <span class="fw-bold text-danger" id="pending-count">5</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span class="text-muted">最近盘点：</span>
+                                        <span id="last-stocktake">2023-12-05</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span class="text-muted">盘点准确率：</span>
+                                        <span class="fw-bold text-success" id="accuracy-rate">98.5%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 库存统计 -->
+                        <div class="card shadow-sm border-0 mt-4">
+                            <div class="card-header bg-white border-0">
+                                <h6 class="mb-0">库存统计</h6>
+                            </div>
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="small text-muted">总库存种类</span>
+                                    <span class="fw-bold" id="stat-total-types">0</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="small text-muted">总库存数量</span>
+                                    <span class="fw-bold" id="stat-total-qty">0</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="small text-muted">货位使用率</span>
+                                    <span class="fw-bold text-info" id="stat-location-usage">0%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
