@@ -1,0 +1,614 @@
+
+            <!-- 设备监控 -->
+            <div id="view-devices" class="view-section" style="display: none;">
+                <h2 class="fw-bold mb-4">设备监控 (RCS)</h2>
+                <div class="alert alert-warning border-0 shadow-sm">
+                    <i class="fas fa-lock me-2"></i> 
+                    <strong>核心控制区</strong>: 仅管理员有权查看 AGV 与四向穿梭车实时状态。
+                </div>
+                
+                <!-- 设备状态概览 -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <div class="card p-3 text-center border-start border-4 border-success shadow-sm">
+                            <i class="fas fa-robot fa-2x text-success mb-2"></i>
+                            <h5>AGV-001</h5>
+                            <div class="small text-muted mb-2">搬运机器人</div>
+                            <span class="badge bg-success">运行中</span>
+                            <div class="small mt-2">电量: 85%</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                         <div class="card p-3 text-center border-start border-4 border-secondary shadow-sm">
+                            <i class="fas fa-robot fa-2x text-secondary mb-2"></i>
+                            <h5>AGV-002</h5>
+                            <div class="small text-muted mb-2">搬运机器人</div>
+                            <span class="badge bg-secondary">空闲</span>
+                            <div class="small mt-2">电量: 92%</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card p-3 text-center border-start border-4 border-info shadow-sm">
+                            <i class="fas fa-shipping-fast fa-2x text-info mb-2"></i>
+                            <h5>Shuttle-01</h5>
+                            <div class="small text-muted mb-2">四向穿梭车</div>
+                            <span class="badge bg-info">盘点中</span>
+                            <div class="small mt-2">任务: A区盘点</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card p-3 text-center border-start border-4 border-warning shadow-sm">
+                            <i class="fas fa-wrench fa-2x text-warning mb-2"></i>
+                            <h5>Conveyor-01</h5>
+                            <div class="small text-muted mb-2">输送线</div>
+                            <span class="badge bg-warning text-dark">维护中</span>
+                            <div class="small mt-2">预计恢复: 14:30</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 设备控制面板 -->
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white border-0">
+                        <h5 class="mb-0">设备控制面板</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="card bg-light border-0 p-3">
+                                    <h6 class="mb-3">AGV调度</h6>
+                                    <button class="btn btn-outline-primary w-100 mb-2" onclick="dispatchAGV('AGV-001')">
+                                        <i class="fas fa-play me-2"></i>调度 AGV-001
+                                    </button>
+                                    <button class="btn btn-outline-secondary w-100" onclick="stopAGV('AGV-001')">
+                                        <i class="fas fa-stop me-2"></i>停止 AGV-001
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-light border-0 p-3">
+                                    <h6 class="mb-3">穿梭车控制</h6>
+                                    <button class="btn btn-outline-success w-100 mb-2" onclick="startShuttleTask()">
+                                        <i class="fas fa-tasks me-2"></i>开始盘点任务
+                                    </button>
+                                    <button class="btn btn-outline-warning w-100" onclick="pauseShuttle()">
+                                        <i class="fas fa-pause me-2"></i>暂停当前任务
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-light border-0 p-3">
+                                    <h6 class="mb-3">系统操作</h6>
+                                    <button class="btn btn-outline-info w-100 mb-2" onclick="refreshDeviceStatus()">
+                                        <i class="fas fa-sync-alt me-2"></i>刷新设备状态
+                                    </button>
+                                    <button class="btn btn-outline-danger w-100" onclick="showDeviceLogs()">
+                                        <i class="fas fa-file-alt me-2"></i>查看设备日志
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 出库订单管理 -->
+            <div id="view-orders" class="view-section" style="display: none;">
+                <h2 class="fw-bold mb-4">出库订单管理</h2>
+                
+                <!-- 创建新订单 -->
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">创建出库订单</h5>
+                        <button class="btn btn-primary" onclick="showCreateOrderModal()">
+                            <i class="fas fa-cart-plus me-2"></i>创建新出库订单
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info border-0 mb-0">
+                            <i class="fas fa-shipping-fast me-2"></i> 
+                            此模块包含 TMS (运输管理) 逻辑，负责订单拣选、路径规划和出库调度。
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 订单列表 -->
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">出库订单列表</h5>
+                        <div class="btn-group btn-group-sm">
+                            <button type="button" class="btn btn-outline-secondary" onclick="filterOrders('all')">全部</button>
+                            <button type="button" class="btn btn-outline-warning" onclick="filterOrders('pending')">待拣选</button>
+                            <button type="button" class="btn btn-outline-info" onclick="filterOrders('picking')">拣货中</button>
+                            <button type="button" class="btn btn-outline-primary" onclick="filterOrders('shipped')">已发货</button>
+                            <button type="button" class="btn btn-outline-success" onclick="filterOrders('completed')">已完成</button>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0 align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>订单编号</th>
+                                        <th>客户</th>
+                                        <th>货物种类</th>
+                                        <th>总数量</th>
+                                        <th>订单状态</th>
+                                        <th>创建时间</th>
+                                        <th>预计发货</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="orders-table-body">
+                                    <!-- 动态生成 -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-center p-3 border-top" id="orders-empty" style="display: none;">
+                            <i class="fas fa-clipboard-list fa-2x text-muted mb-2"></i>
+                            <p class="text-muted mb-0">暂无出库订单记录</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 无权限访问页面 -->
+            <div id="view-forbidden" class="view-section" style="display: none;">
+                <div class="text-center mt-5 pt-5">
+                    <i class="fas fa-ban fa-4x text-danger mb-3"></i>
+                    <h3 class="fw-bold">访问被拒绝</h3>
+                    <p class="text-muted mb-4">当前账号权限不足，无法访问此模块。</p>
+                    <button class="btn btn-primary" onclick="switchView('inbound', null)">
+                        <i class="fas fa-arrow-left me-2"></i>返回供应商界面
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模态框 - 审核入库申请 -->
+    <div class="modal fade" id="approveModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">审核入库申请</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>申请编号: <strong id="modal-app-id"></strong></p>
+                    <p>供应商: <span id="modal-app-supplier"></span></p>
+                    <p>货物: <span id="modal-app-cargo"></span></p>
+                    <p>数量: <span id="modal-app-qty"></span></p>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">审核结果</label>
+                        <div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="approveResult" id="approvePass" value="pass" checked>
+                                <label class="form-check-label text-success" for="approvePass">
+                                    <i class="fas fa-check me-1"></i> 通过
+                                </label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="approveResult" id="approveReject" value="reject">
+                                <label class="form-check-label text-danger" for="approveReject">
+                                    <i class="fas fa-times me-1"></i> 驳回
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3" id="reject-reason-container" style="display: none;">
+                        <label class="form-label">驳回理由 <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="reject-reason" rows="3" placeholder="请填写驳回理由..."></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">审核备注</label>
+                        <textarea class="form-control" id="approve-notes" rows="2" placeholder="可填写审核备注..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="confirmApprove()">确认审核</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模态框 - 创建出库订单 -->
+    <div class="modal fade" id="createOrderModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">创建出库订单</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="create-order-form">
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">客户名称 <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="order-customer" placeholder="请输入客户名称" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">订单类型</label>
+                                <select class="form-select" id="order-type">
+                                    <option value="销售出库">销售出库</option>
+                                    <option value="调拨出库">调拨出库</option>
+                                    <option value="退货出库">退货出库</option>
+                                    <option value="样品出库">样品出库</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">预计发货时间</label>
+                                <input type="date" class="form-control" id="order-ship-date">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">收货地址</label>
+                                <input type="text" class="form-control" id="order-address" placeholder="请输入收货地址">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">订单备注</label>
+                            <textarea class="form-control" id="order-notes" rows="2" placeholder="可填写订单特殊要求..."></textarea>
+                        </div>
+                        
+                        <hr>
+                        
+                        <h6 class="mb-3">订单明细</h6>
+                        <div id="order-items-container">
+                            <div class="order-item row g-3 mb-2 align-items-end">
+                                <div class="col-md-5">
+                                    <label class="form-label small">货物名称</label>
+                                    <input type="text" class="form-control form-control-sm" placeholder="选择货物">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label small">数量</label>
+                                    <input type="number" class="form-control form-control-sm" placeholder="数量" min="1">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label small">单位</label>
+                                    <select class="form-select form-select-sm">
+                                        <option>件</option>
+                                        <option>箱</option>
+                                        <option>个</option>
+                                        <option>套</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-1">
+                                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeOrderItem(this)">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button type="button" class="btn btn-outline-secondary btn-sm mt-2" onclick="addOrderItem()">
+                            <i class="fas fa-plus me-1"></i> 添加货物
+                        </button>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="confirmCreateOrder()">创建订单</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模态框 - 盘点历史 -->
+    <div class="modal fade" id="stocktakeHistoryModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">盘点历史记录</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>盘点单号</th>
+                                    <th>盘点类型</th>
+                                    <th>盘点时间</th>
+                                    <th>盘点货位</th>
+                                    <th>差异数量</th>
+                                    <th>操作人</th>
+                                    <th>状态</th>
+                                </tr>
+                            </thead>
+                            <tbody id="stocktake-history-body">
+                                <!-- 动态生成 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 脚本引入 -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // --- 全局状态与模拟数据 ---
+        
+        let currentUser = null; // 当前登录用户对象
+        let currentAppToApprove = null; // 当前待审核的申请ID
+        let charts = {}; // 存储图表实例
+        let currentFilter = {
+            inbound: 'all',
+            inventory: { search: '', area: '', status: '' },
+            orders: 'all'
+        };
+
+        // 模拟数据 - 使用localStorage持久化
+        function getStorageData(key, defaultValue) {
+            const data = localStorage.getItem(key);
+            return data ? JSON.parse(data) : defaultValue;
+        }
+
+        function setStorageData(key, data) {
+            localStorage.setItem(key, JSON.stringify(data));
+        }
+
+        // 初始化模拟数据
+        let inboundData = getStorageData('wms_inbound_data', [
+            { id: 'IN2023102701', supplier: '华东电子', cargo: '电阻包', spec: '1KΩ', qty: 5000, batch: 'BATCH202310', eta: '2023-10-28', time: '2023-10-27 09:30', status: '待审批', notes: '', auditLog: [] },
+            { id: 'IN2023102702', supplier: '南方机械', cargo: '轴承 M8', spec: 'M8x20mm', qty: 200, batch: 'BATCH202309', eta: '2023-10-27', time: '2023-10-27 10:15', status: '已通过', notes: '', auditLog: [{user: 'admin', action: '通过', time: '2023-10-27 14:30', notes: '符合入库标准'}] },
+            { id: 'IN2023102703', supplier: '华东电子', cargo: 'PCB板', spec: '10x10cm', qty: 1000, batch: 'BATCH202311', eta: '2023-10-30', time: '2023-10-27 11:00', status: '草稿', notes: '等待客户确认', auditLog: [] }
+        ]);
+
+        let inventoryData = getStorageData('wms_inventory_data', [
+            { id: 'INV001', location: 'A-01-01-01', cargo: '高精密轴承', spec: 'M8x20mm', qty: 150, safeQty: 100, update: '2023-12-09 08:00', status: '正常', area: 'A' },
+            { id: 'INV002', location: 'B-02-03-04', cargo: '电阻包', spec: '1KΩ', qty: 4800, safeQty: 5000, update: '2023-12-08 14:30', status: '待盘点', area: 'B' },
+            { id: 'INV003', location: 'C-05-01-02', cargo: '大型螺母 M20', spec: 'M20x50mm', qty: 980, safeQty: 500, update: '2023-12-09 10:20', status: '正常', area: 'C' },
+            { id: 'INV004', location: 'A-02-01-03', cargo: 'PCB板', spec: '10x10cm', qty: 320, safeQty: 200, update: '2023-12-08 16:45', status: '低库存', area: 'A' },
+            { id: 'INV005', location: 'D-03-02-01', cargo: '电子元件', spec: 'IC-7805', qty: 1500, safeQty: 1000, update: '2023-12-07 09:15', status: '正常', area: 'D' }
+        ]);
+
+        let orderData = getStorageData('wms_order_data', [
+            { id: 'OUT2023120901', customer: '上海终端厂', type: '销售出库', items: 3, totalQty: 450, status: '待拣选', time: '2023-12-09 11:00', shipDate: '2023-12-10', address: '上海市浦东新区', notes: '', auditLog: [] },
+            { id: 'OUT2023120802', customer: '深圳电子科技', type: '销售出库', items: 1, totalQty: 200, status: '已发货', time: '2023-12-08 16:30', shipDate: '2023-12-09', address: '深圳市南山区', notes: '加急订单', auditLog: [{user: 'admin', action: '发货', time: '2023-12-09 09:00'}] },
+            { id: 'OUT2023120703', customer: '北京汽车制造', type: '调拨出库', items: 2, totalQty: 80, status: '已完成', time: '2023-12-07 09:00', shipDate: '2023-12-07', address: '北京市朝阳区', notes: '内部调拨', auditLog: [{user: 'admin', action: '完成', time: '2023-12-07 15:30'}] }
+        ]);
+
+        let deviceData = getStorageData('wms_device_data', [
+            { id: 'AGV-001', type: '搬运机器人', status: '运行中', battery: 85, task: '搬运至B区', lastUpdate: '2023-12-09 13:45' },
+            { id: 'AGV-002', type: '搬运机器人', status: '空闲', battery: 92, task: '无', lastUpdate: '2023-12-09 13:30' },
+            { id: 'Shuttle-01', type: '四向穿梭车', status: '盘点中', battery: 78, task: 'A区盘点', lastUpdate: '2023-12-09 13:50' },
+            { id: 'Conveyor-01', type: '输送线', status: '维护中', battery: null, task: '定期维护', lastUpdate: '2023-12-09 10:00' }
+        ]);
+
+        // 记住密码功能
+        function initRememberMe() {
+            const rememberData = localStorage.getItem('wms_remember_me');
+            if (rememberData) {
+                const { username, password, role } = JSON.parse(rememberData);
+                document.getElementById('username').value = username;
+                document.getElementById('password').value = password;
+                document.getElementById('loginRole').value = role;
+                document.getElementById('rememberMe').checked = true;
+            }
+        }
+
+        // 页面加载时初始化记住密码
+        window.addEventListener('DOMContentLoaded', initRememberMe);
+
+        // --- 登录/权限逻辑 ---
+
+        function handleLogin() {
+            const user = document.getElementById('username').value.trim();
+            const pass = document.getElementById('password').value.trim();
+            const role = document.getElementById('loginRole').value;
+            const remember = document.getElementById('rememberMe').checked;
+
+            // 记住密码
+            if (remember) {
+                localStorage.setItem('wms_remember_me', JSON.stringify({ username: user, password: pass, role: role }));
+            } else {
+                localStorage.removeItem('wms_remember_me');
+            }
+
+            // 模拟验证
+            let userData = null;
+            if (user === 'admin' && pass === '123456' && role === 'admin') {
+                userData = { name: '系统管理员', username: 'admin', role: 'admin' };
+            } else if (user === 'supplier' && pass === '123456' && role === 'supplier') {
+                userData = { name: '华东电子', username: 'supplier', role: 'supplier' };
+            } else {
+                showAlert('账号密码错误，或身份选择不匹配！', 'danger');
+                return;
+            }
+
+            loginSuccess(userData);
+        }
+
+        function loginSuccess(user) {
+            currentUser = user;
+            
+            // 切换界面
+            document.getElementById('login-container').style.display = 'none';
+            document.getElementById('main-container').style.display = 'flex';
+            
+            // 设置用户信息
+            document.getElementById('nav-username').innerText = user.name;
+            document.getElementById('nav-role-badge').innerText = user.role === 'admin' ? '管理员' : '供应商';
+            document.getElementById('nav-role-badge').className = user.role === 'admin' ? 'badge bg-danger' : 'badge bg-success';
+
+            initSidebar();
+            
+            if (user.role === 'supplier') {
+                switchView('inbound', document.querySelector('#sidebar-menu a[onclick*="inbound"]')); 
+            } else {
+                switchView('dashboard', document.querySelector('#sidebar-menu a[onclick*="dashboard"]'));
+                initDashboardCharts();
+            }
+            
+            showAlert(`欢迎回来，${user.name}！`, 'success');
+        }
+
+        function logout() {
+            if (confirm('确定要退出登录吗？')) {
+                currentUser = null;
+                document.getElementById('main-container').style.display = 'none';
+                document.getElementById('login-container').style.display = 'flex';
+                document.getElementById('password').value = '';
+                
+                // 销毁图表实例
+                if (charts.trendChart) charts.trendChart.destroy();
+                if (charts.pieChart) charts.pieChart.destroy();
+                
+                showAlert('已安全退出系统', 'info');
+            }
+        }
+
+        // --- 菜单渲染与视图切换 ---
+
+        function initSidebar() {
+            const menu = document.getElementById('sidebar-menu');
+            menu.innerHTML = ''; 
+
+            const allMenus = [
+                { id: 'dashboard', text: '综合监控', icon: 'fa-tachometer-alt', roles: ['admin'] },
+                { id: 'inbound', text: '入库管理', icon: 'fa-truck-loading', roles: ['admin', 'supplier'] },
+                { id: 'inventory', text: '库存盘点', icon: 'fa-clipboard-list', roles: ['admin'] },
+                { id: 'devices', text: '设备监控', icon: 'fa-robot', roles: ['admin'] },
+                { id: 'orders', text: '出库订单', icon: 'fa-shipping-fast', roles: ['admin'] } 
+            ];
+
+            allMenus.forEach(item => {
+                if (item.roles.includes(currentUser.role)) {
+                    const li = document.createElement('li');
+                    li.className = 'nav-item';
+                    li.innerHTML = `
+                        <a class="nav-link" onclick="switchView('${item.id}', this)">
+                            <i class="fas ${item.icon} me-2"></i> ${item.text}
+                        </a>
+                    `;
+                    menu.appendChild(li);
+                }
+            });
+        }
+
+        function switchView(viewName, navElement) {
+            // 1. 安全检查
+            if (currentUser.role === 'supplier' && viewName !== 'inbound') {
+                hideAllViews();
+                document.getElementById('view-forbidden').style.display = 'block';
+                return;
+            }
+
+            // 2. UI 激活状态切换
+            if (navElement) {
+                document.querySelectorAll('#sidebar .nav-link').forEach(el => el.classList.remove('active'));
+                navElement.classList.add('active');
+            } else {
+                // 用于首次加载，确保菜单选中
+                const targetLink = document.querySelector(`#sidebar-menu a[onclick*="'${viewName}'"]`);
+                if (targetLink) targetLink.classList.add('active');
+            }
+
+            // 3. 显示对应视图并加载数据
+            hideAllViews();
+            const target = document.getElementById('view-' + viewName);
+            if (target) {
+                target.style.display = 'block';
+                if (viewName === 'dashboard') refreshDashboard();
+                if (viewName === 'inbound') renderInboundView();
+                if (viewName === 'inventory') renderInventoryView();
+                if (viewName === 'devices') renderDeviceView();
+                if (viewName === 'orders') renderOrdersView();
+            }
+        }
+
+        function hideAllViews() {
+            document.querySelectorAll('.view-section').forEach(el => el.style.display = 'none');
+        }
+
+        // --- 工具函数 ---
+
+        function showAlert(message, type = 'info') {
+            // 移除现有的提示
+            const existingAlert = document.querySelector('.alert-toast');
+            if (existingAlert) existingAlert.remove();
+            
+            // 创建新的提示
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type} alert-dismissible fade show alert-toast position-fixed`;
+            alert.style.cssText = 'top: 20px; right: 20px; z-index: 1050; max-width: 350px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
+            alert.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            document.body.appendChild(alert);
+            
+            // 3秒后自动消失
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.remove();
+                }
+            }, 3000);
+        }
+
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('zh-CN') + ' ' + date.toLocaleTimeString('zh-CN', {hour: '2-digit', minute:'2-digit'});
+        }
+
+        // --- 综合监控大屏 ---
+
+        function initDashboardCharts() {
+            // 出入库趋势图
+            const trendCtx = document.getElementById('trendChart').getContext('2d');
+            charts.trendChart = new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: ['08:00', '10:00', '12:00', '14:00', '16:00', '18:00'],
+                    datasets: [
+                        {
+                            label: '入库量',
+                            data: [12, 19, 8, 15, 10, 7],
+                            borderColor: '#0d6efd',
+                            backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: '出库量',
+                            data: [8, 12, 6, 10, 14, 9],
+                            borderColor: '#198754',
+                            backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '数量'
+                            }
+                        }
+                    }
+                }
+            });
+
