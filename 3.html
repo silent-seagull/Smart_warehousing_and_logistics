@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智慧仓储协同系统 - 登录</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar-width: 250px;
+            --primary-color: #0d6efd;
+            --bg-dark: #212529;
+        }
+        body {
+            height: 100vh;
+            background-color: #f4f6f9;
+            overflow: hidden;
+        }
+
+        /* --- 登录页样式 --- */
+        #login-container {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #0d6efd 0%, #0099ff 100%);
+        }
+        .login-card {
+            width: 400px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            border: none;
+        }
+
+        /* --- 主界面样式 --- */
+        #main-container {
+            display: none; /* 默认隐藏，登录后显示 */
+            height: 100%;
+            display: flex; 
+        }
+        #sidebar {
+            min-width: var(--sidebar-width);
+            max-width: var(--sidebar-width);
+            background-color: var(--bg-dark);
+            color: white;
+            display: flex;
+            flex-direction: column;
+        }
+        #sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 5px;
+            cursor: pointer;
+        }
+        #sidebar .nav-link:hover, #sidebar .nav-link.active {
+            color: white;
+            background-color: var(--primary-color);
+            border-radius: 5px;
+        }
+        #content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background-color: #f4f6f9;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="login-container">
+        <div class="card login-card p-4">
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <i class="fas fa-boxes-stacked fa-3x text-primary mb-3"></i>
+                    <h4 class="fw-bold">智慧仓储协同系统</h4>
+                    <p class="text-muted small">Smart Warehouse & Logistics System</p>
+                </div>
+                <form id="loginForm">
+                    <div class="mb-3">
+                        <label class="form-label">账号</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-user"></i></span>
+                            <input type="text" id="username" class="form-control" placeholder="请输入账号" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">密码</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                            <input type="password" id="password" class="form-control" placeholder="请输入密码" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">登录身份</label>
+                        <select id="loginRole" class="form-select">
+                            <option value="admin">系统管理员</option>
+                            <option value="supplier">供应商</option>
+                        </select>
+                    </div>
+                    <button type="button" class="btn btn-primary w-100 py-2" onclick="handleLogin()">
+                        登 录
+                    </button>
+                    <div class="mt-3 text-center small text-muted">
+                        <p class="mb-1">测试账号：</p>
+                        <span class="badge bg-light text-dark border">admin / 123456</span>
+                        <span class="badge bg-light text-dark border">supplier / 123456</span>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="main-container" style="display: none;">
+        <nav id="sidebar" class="p-3">
+            <div class="d-flex align-items-center mb-4 text-white text-decoration-none">
+                <span class="fs-4 fw-bold"><i class="fas fa-cube me-2"></i>WMS 系统</span>
+            </div>
+            
+            <div class="mb-3 px-2">
+                <div class="d-flex align-items-center p-2 bg-secondary bg-opacity-25 rounded">
+                    <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;">
+                        <i class="fas fa-user text-white small"></i>
+                    </div>
+                    <div class="ms-2">
+                        <div class="small fw-bold" id="nav-username">User</div>
+                        <div class="badge bg-info text-dark" style="font-size: 0.6em;" id="nav-role-badge">Role</div>
+                    </div>
+                </div>
+            </div>
+
+            <hr>
+            
+            <ul class="nav nav-pills flex-column mb-auto" id="sidebar-menu">
+                </ul>
+
+            <hr>
+            <button class="btn btn-outline-light w-100 btn-sm" onclick="logout()">
+                <i class="fas fa-sign-out-alt me-2"></i>退出登录
+            </button>
+        </nav>
+
+        <div id="content">
+            <div id="view-dashboard" class="view-section">
+                <h2 class="mb-4">综合监控大屏</h2>
+                <div class="row g-4 mb-4">
+                    <div class="col-md-3">
+                        <div class="card bg-primary text-white p-3 border-0 shadow-sm">
+                            <h3>128</h3>
+                            <div class="small opacity-75">今日入库单据</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-success text-white p-3 border-0 shadow-sm">
+                            <h3>94%</h3>
+                            <div class="small opacity-75">设备在线率</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-warning text-dark p-3 border-0 shadow-sm">
+                            <h3>3</h3>
+                            <div class="small opacity-75">库存异常告警</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-info text-white p-3 border-0 shadow-sm">
+                            <h3>45</h3>
+                            <div class="small opacity-75">待处理出库单</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="alert alert-info">
+                    <i class="fas fa-chart-line me-2"></i> 管理员可见：此处展示数字孪生视图、实时日志流与 KPI 数据分析。
+                </div>
+            </div>
+            
+            <hr>
+
+            <div id="view-inbound" class="view-section" style="display: none;">
+                <h2 class="mb-4">入库申请管理</h2>
+                
+                <div id="supplier-create-panel" class="card shadow-sm mb-4">
+                    <div class="card-header bg-white fw-bold text-primary">
+                        <i class="fas fa-plus-circle me-2"></i>新建入库申请
+                    </div>
+                    <div class="card-body">
+                        <form id="inbound-form">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label">货物名称</label>
+                                    <input type="text" class="form-control" placeholder="如：高精密轴承">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">数量</label>
+                                    <input type="number" class="form-control" placeholder="100">
+                                </div>
+                                <div class="col-md-4 d-flex align-items-end">
+                                    <button type="button" class="btn btn-primary w-100" onclick="submitApplication()">
+                                        提交申请
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-list me-2"></i>申请列表</span>
+                        <span class="badge bg-secondary" id="list-info-badge">全部数据</span>
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table table-hover mb-0 align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>申请编号</th>
+                                    <th>供应商</th>
+                                    <th>货物</th>
+                                    <th>数量</th>
+                                    <th>提交时间</th>
+                                    <th>状态</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inbound-table-body">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <hr>
+
+            <div id="view-inventory" class="view-section" style="display: none;">
+                <h2 class="mb-4">库存盘点与实时查询</h2>
+                
+                <div class="row g-4 mb-4">
+                    <div class="col-md-9">
+                         <div class="card shadow-sm">
+                            <div class="card-header bg-white">
+                                实时库存清单
+                            </div>
+                            <div class="card-body p-0">
+                                <table class="table table-striped table-sm mb-0 align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>库存ID</th>
+                                            <th>货位编码</th>
+                                            <th>货物名称</th>
+                                            <th>当前数量</th>
+                                            <th>最近更新</th>
+                                            <th>状态</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="inventory-table-body">
+                                        </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                         <div class="card shadow-sm bg-light">
+                            <div class="card-header bg-primary text-white fw-bold">
+                                盘点操作
+                            </div>
+                            <div class="card-body">
+                                <p class="small text-muted">通过调度四向穿梭车进行盘点，确保数据一致性。</p>
+                                <button class="btn btn-warning w-100 mb-2" onclick="startStocktake()">
+                                    <i class="fas fa-sync-alt me-2"></i>发起全仓盘点
+                                </button>
+                                <button class="btn btn-outline-secondary w-100 btn-sm" onclick="alert('模拟生成盘点差异报告...')">
+                                    查看差异报告
+                                </button>
+                                <hr class="my-3">
+                                <div class="small text-muted">
+                                    <p class="mb-1">待盘点货位：<span class="fw-bold text-danger">5</span></p>
+                                    <p class="mb-0">上次盘点：2023-12-05</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <hr>
+
+            <div id="view-devices" class="view-section" style="display: none;">
+                <h2 class="mb-4">设备监控 (RCS)</h2>
+                <div class="alert alert-warning">
+                    <i class="fas fa-lock me-2"></i> 核心控制区：仅管理员有权查看 AGV 与 四向穿梭车实时状态。
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <div class="card p-3 text-center border-success mb-3">
+                            <i class="fas fa-robot fa-2x text-success mb-2"></i>
+                            <h5>AGV-001</h5>
+                            <span class="badge bg-success">运行中</span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                         <div class="card p-3 text-center border-secondary mb-3">
+                            <i class="fas fa-robot fa-2x text-secondary mb-2"></i>
+                            <h5>AGV-002</h5>
+                            <span class="badge bg-secondary">空闲</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <hr>
+
+            <div id="view-orders" class="view-section" style="display: none;">
+                <h2 class="mb-4">出库订单管理</h2>
+                
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-white">
+                        <button class="btn btn-sm btn-primary" onclick="createNewOrder()">
+                            <i class="fas fa-cart-plus me-2"></i>创建新出库订单
+                        </button>
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table table-hover mb-0 align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>订单编号</th>
+                                    <th>客户</th>
+                                    <th>货物种类</th>
+                                    <th>订单状态</th>
+                                    <th>创建时间</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="orders-table-body">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="alert alert-info">
+                    <i class="fas fa-shipping-fast me-2"></i> 此模块包含 TMS (运输管理) 逻辑，负责订单拣选、路径规划和出库调度。
+                </div>
+            </div>
+
+            <div id="view-forbidden" class="view-section" style="display: none;">
+                <div class="text-center mt-5 pt-5">
+                    <i class="fas fa-ban fa-4x text-danger mb-3"></i>
+                    <h3>访问被拒绝</h3>
+                    <p class="text-muted">当前账号权限不足，无法访问此模块。</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // --- 1. 全局状态与模拟数据 ---
+        
+        let currentUser = null; // 当前登录用户对象
+
+        // 模拟 WMS 入库数据
+        let inboundData = [
+            { id: 'IN2023102701', supplier: '华东电子', cargo: '电阻包', qty: 5000, time: '2023-10-27 09:30', status: '待审批' },
+            { id: 'IN2023102702', supplier: '南方机械', cargo: '轴承 M8', qty: 200, time: '2023-10-27 10:15', status: '已通过' },
+            { id: 'IN2023102703', supplier: '华东电子', cargo: 'PCB板', qty: 1000, time: '2023-10-27 11:00', status: '草稿' }
+        ];
+
+        // 模拟库存数据
+        let inventoryData = [
+            { id: 'INV001', location: 'A-01-01-01', cargo: '高精密轴承', qty: 150, update: '2023-12-09 08:00', status: '正常' },
+            { id: 'INV002', location: 'B-02-03-04', cargo: '电阻包', qty: 4800, update: '2023-12-08 14:30', status: '待盘点' },
+            { id: 'INV003', location: 'C-05-01-02', cargo: '大型螺母 M20', qty: 980, update: '2023-12-09 10:20', status: '正常' },
+        ];
+        
+        // 模拟出库订单数据
+        let orderData = [
+            { id: 'OUT2023120901', customer: '上海终端厂', type: 3, status: '待拣选', time: '2023-12-09 11:00' },
+            { id: 'OUT2023120802', customer: '深圳电子科技', type: 1, status: '已发货', time: '2023-12-08 16:30' },
+            { id: 'OUT2023120703', customer: '北京汽车制造', type: 2, status: '已完成', time: '2023-12-07 09:00' },
+        ];
+
+
+        // --- 2. 登录/权限逻辑 ---
+
+        function handleLogin() {
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+            const role = document.getElementById('loginRole').value;
+
+            // 模拟验证
+            if (user === 'admin' && pass === '123456' && role === 'admin') {
+                loginSuccess({ name: '系统管理员', username: 'admin', role: 'admin' });
+            } else if (user === 'supplier' && pass === '123456' && role === 'supplier') {
+                loginSuccess({ name: '华东电子', username: 'supplier', role: 'supplier' });
+            } else {
+                alert('账号密码错误，或身份选择不匹配！');
+            }
+        }
+
+        function loginSuccess(user) {
+            currentUser = user;
+            
+            // 切换界面
+            document.getElementById('login-container').style.display = 'none';
+            document.getElementById('main-container').style.display = 'flex';
+            
+            // 设置用户信息
+            document.getElementById('nav-username').innerText = user.name;
+            document.getElementById('nav-role-badge').innerText = user.role === 'admin' ? '管理员' : '供应商';
+            document.getElementById('nav-role-badge').className = user.role === 'admin' ? 'badge bg-danger' : 'badge bg-success';
+
+            initSidebar();
+            
+            if (user.role === 'supplier') {
+                switchView('inbound', document.querySelector('#sidebar-menu a[onclick*="inbound"]')); 
+            } else {
+                switchView('dashboard', document.querySelector('#sidebar-menu a[onclick*="dashboard"]'));
+            }
+        }
+
+        function logout() {
+            currentUser = null;
+            document.getElementById('main-container').style.display = 'none';
+            document.getElementById('login-container').style.display = 'flex';
+            document.getElementById('password').value = '';
+        }
+
+        // --- 3. 菜单渲染与视图切换 ---
+
+        function initSidebar() {
+            const menu = document.getElementById('sidebar-menu');
+            menu.innerHTML = ''; 
+
+            const allMenus = [
+                { id: 'dashboard', text: '综合监控', icon: 'fa-tachometer-alt', roles: ['admin'] },
+                { id: 'inbound', text: '入库管理', icon: 'fa-truck-loading', roles: ['admin', 'supplier'] },
+                { id: 'inventory', text: '库存盘点', icon: 'fa-clipboard-list', roles: ['admin'] },
+                { id: 'devices', text: '设备监控', icon: 'fa-robot', roles: ['admin'] },
+                { id: 'orders', text: '出库订单', icon: 'fa-shipping-fast', roles: ['admin'] } 
+            ];
+
+            allMenus.forEach(item => {
+                if (item.roles.includes(currentUser.role)) {
+                    const li = document.createElement('li');
+                    li.className = 'nav-item';
+                    li.innerHTML = `
+                        <a class="nav-link" onclick="switchView('${item.id}', this)">
+                            <i class="fas ${item.icon} me-2"></i> ${item.text}
+                        </a>
+                    `;
+                    menu.appendChild(li);
+                }
+            });
+        }
+
+        function switchView(viewName, navElement) {
+            // 1. 安全检查
+            if (currentUser.role === 'supplier' && viewName !== 'inbound') {
+                hideAllViews();
+                document.getElementById('view-forbidden').style.display = 'block';
+                return;
+            }
+
+            // 2. UI 激活状态切换
+            if (navElement) {
+                document.querySelectorAll('#sidebar .nav-link').forEach(el => el.classList.remove('active'));
+                navElement.classList.add('active');
+            } else {
+                // 用于首次加载，确保菜单选中
+                const targetLink = document.querySelector(`#sidebar-menu a[onclick*="'${viewName}'"]`);
+                if (targetLink) targetLink.classList.add('active');
+            }
+
+            // 3. 显示对应视图并加载数据
+            hideAllViews();
+            const target = document.getElementById('view-' + viewName);
+            if (target) {
+                target.style.display = 'block';
+                if (viewName === 'inbound') renderInboundView();
+                if (viewName === 'inventory') renderInventoryView(); // 新增调用
+                if (viewName === 'orders') renderOrdersView();       // 新增调用
+            }
+        }
+
+        function hideAllViews() {
+            document.querySelectorAll('.view-section').forEach(el => el.style.display = 'none');
+        }
+
+        // --- 4. 业务模块渲染与操作 ---
+
+        // 入库管理 (原有的)
+        function renderInboundView() {
+            const createPanel = document.getElementById('supplier-create-panel');
+            if (currentUser.role === 'supplier') {
+                createPanel.style.display = 'block';
+                document.getElementById('list-info-badge').innerText = "我的申请记录";
+                document.getElementById('list-info-badge').className = "badge bg-primary";
+            } else {
+                createPanel.style.display = 'none'; 
+                document.getElementById('list-info-badge').innerText = "所有待处理申请";
+                document.getElementById('list-info-badge').className = "badge bg-danger";
+            }
+
+            const tbody = document.getElementById('inbound-table-body');
+            tbody.innerHTML = '';
+            const displayData = currentUser.role === 'supplier' 
+                ? inboundData.filter(item => item.supplier === currentUser.name)
+                : inboundData;
+
+            displayData.forEach(item => {
+                let badgeClass = item.status === '已通过' ? 'bg-success' : 
+                                 item.status === '待审批' ? 'bg-warning text-dark' : 'bg-secondary';
+
+                let actionBtn = '';
+                if (currentUser.role === 'admin' && item.status === '待审批') {
+                    actionBtn = `<button class="btn btn-sm btn-success" onclick="approveApp('${item.id}')"><i class="fas fa-check me-1"></i>审批通过</button>`;
+                } else if (currentUser.role === 'supplier' && item.status === '草稿') {
+                    actionBtn = `<button class="btn btn-sm btn-primary" onclick="submitDraft('${item.id}')">正式提交</button>`;
+                } else {
+                    actionBtn = `<span class="text-muted small">-</span>`;
+                }
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${item.id}</td>
+                        <td>${item.supplier}</td>
+                        <td>${item.cargo}</td>
+                        <td>${item.qty}</td>
+                        <td>${item.time}</td>
+                        <td><span class="badge ${badgeClass}">${item.status}</span></td>
+                        <td>${actionBtn}</td>
+                    </tr>
+                `;
+            });
+        }
+        
+        // 供应商操作：提交新申请
+        function submitApplication() {
+            const cargo = document.querySelector('#inbound-form input[type="text"]').value;
+            const qty = document.querySelector('#inbound-form input[type="number"]').value;
+
+            if(!cargo || !qty) return alert('请填写完整信息');
+
+            inboundData.unshift({
+                id: 'IN' + Date.now(),
+                supplier: currentUser.name,
+                cargo: cargo,
+                qty: qty,
+                time: new Date().toLocaleString(),
+                status: '待审批' 
+            });
+
+            alert('申请提交成功！请等待管理员审核。');
+            renderInboundView();
+            document.getElementById('inbound-form').reset();
+        }
+
+        // 管理员操作：审批申请
+        function approveApp(id) {
+            if(!confirm('确认审批通过该入库申请吗？系统将自动分配货位。')) return;
+
+            const item = inboundData.find(d => d.id === id);
+            if(item) {
+                item.status = '已通过';
+                alert(`申请 ${id} 已审批通过！\n触发系统动作：调用货位分配算法...`);
+                renderInboundView(); 
+            }
+        }
+        
+        // 供应商操作：草稿转提交
+        function submitDraft(id) {
+            const item = inboundData.find(d => d.id === id);
+            if(item) {
+                item.status = '待审批';
+                renderInboundView();
+            }
+        }
+        
+        // --- 新增：库存盘点模块 ---
+        function renderInventoryView() {
+            const tbody = document.getElementById('inventory-table-body');
+            tbody.innerHTML = '';
+
+            inventoryData.forEach(item => {
+                let badgeClass = item.status === '正常' ? 'bg-success' : 'bg-danger';
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${item.id}</td>
+                        <td>${item.location}</td>
+                        <td>${item.cargo}</td>
+                        <td>${item.qty}</td>
+                        <td>${item.update}</td>
+                        <td><span class="badge ${badgeClass}">${item.status}</span></td>
+                    </tr>
+                `;
+            });
+        }
+        
+        function startStocktake() {
+            alert("正在调度四向穿梭车执行全仓盘点任务...\n请稍后在日志中查看进度。");
+        }
+        
+        // --- 新增：出库订单模块 ---
+        function renderOrdersView() {
+            const tbody = document.getElementById('orders-table-body');
+            tbody.innerHTML = '';
+
+            orderData.forEach(item => {
+                let badgeClass = item.status === '已完成' ? 'bg-success' : 
+                                 item.status === '待拣选' ? 'bg-warning text-dark' : 'bg-primary';
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${item.id}</td>
+                        <td>${item.customer}</td>
+                        <td>${item.type} 种</td>
+                        <td><span class="badge ${badgeClass}">${item.status}</span></td>
+                        <td>${item.time}</td>
+                        <td>
+                            <button class="btn btn-sm btn-info text-white me-2" onclick="alert('订单详情：${item.id}')"><i class="fas fa-search"></i> 详情</button>
+                            <button class="btn btn-sm btn-danger" onclick="cancelOrder('${item.id}')"><i class="fas fa-times"></i> 取消</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+        
+        function createNewOrder() {
+             const newId = 'OUT' + Date.now().toString().slice(-6);
+             orderData.unshift({
+                id: newId,
+                customer: '新客户-' + newId,
+                type: Math.floor(Math.random() * 5) + 1,
+                status: '待拣选',
+                time: new Date().toLocaleTimeString()
+            });
+            alert(`已成功创建订单 ${newId}，正在进行货物分配与路径规划。`);
+            renderOrdersView();
+        }
+        
+        function cancelOrder(id) {
+            if(confirm(`确认要取消订单 ${id} 吗？`)) {
+                orderData = orderData.filter(d => d.id !== id);
+                alert(`订单 ${id} 已取消。`);
+                renderOrdersView();
+            }
+        }
+        
+
+    </script>
+</body>
+</html>
